@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Shield,
   LayoutDashboard,
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { APP_NAME, SIDEBAR_NAV } from "@/utils/constants";
+import { logoutUser } from "@/services/user-service";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -30,7 +31,13 @@ const iconMap = {
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+
+  const handleLogout = async () => {
+    await logoutUser();
+    router.push("/login");
+  };
 
   return (
     <aside
@@ -88,6 +95,7 @@ export function Sidebar() {
           <ThemeToggle />
         </div>
         <button
+          onClick={handleLogout}
           className={cn(
             "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800/80",
             collapsed && "justify-center px-2"
