@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { registerSchema, type RegisterFormData } from "@/features/auth/schemas";
 import { APP_NAME } from "@/utils/constants";
+import { registerUser } from "@/services/user-service";
 import { useState } from "react";
 
 export function RegisterForm() {
@@ -26,9 +27,10 @@ export function RegisterForm() {
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (_data: RegisterFormData) => {
+  const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
+    await new Promise((r) => setTimeout(r, 500));
+    registerUser(data.name, data.email);
     router.push("/dashboard");
   };
 
