@@ -18,6 +18,7 @@ import { useState } from "react";
 export function RegisterForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -29,9 +30,15 @@ export function RegisterForm() {
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 500));
-    registerUser(data.name, data.email);
-    router.push("/dashboard");
+    setError(null);
+    try {
+      await registerUser(data.name, data.email, data.password);
+      router.push("/dashboard");
+    } catch {
+      setError("Could not create account. This email may already be registered.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -108,6 +115,8 @@ export function RegisterForm() {
                 <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
               )}
             </div>
+
+            {error && <p className="text-sm text-red-600">{error}</p>}
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Creating account..." : "Create account"}
