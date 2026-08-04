@@ -65,21 +65,67 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 - **Notifications** — Analysis, security, and update notifications
 - **Settings** — Profile, password, theme, notifications, API keys
 
-## Backend Integration
+## Backend
 
-API service files are prepared in `/services` for future integration:
+This app uses **Next.js API routes** with **PostgreSQL** (via Prisma) for persistence.
+
+### Setup
+
+1. Start PostgreSQL:
+   ```bash
+   docker compose up -d
+   ```
+
+2. Copy environment variables:
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Run database migrations:
+   ```bash
+   npm run db:migrate
+   npm run db:seed
+   ```
+
+4. Start the dev server:
+   ```bash
+   npm run dev
+   ```
+
+### API Routes
+
+| Route | Methods | Description |
+|-------|---------|-------------|
+| `/api/auth/login` | POST | Sign in |
+| `/api/auth/register` | POST | Create account |
+| `/api/auth/logout` | POST | Sign out |
+| `/api/users/me` | GET, PATCH | Profile |
+| `/api/users/me/settings` | GET, PATCH | Notification prefs |
+| `/api/analyses` | GET, POST | History & new analysis |
+| `/api/analyses/[id]` | GET | Analysis detail |
+| `/api/reports` | GET | Filtered reports |
+| `/api/reports/stats` | GET | Report summary stats |
+| `/api/reports/[id]/read` | PATCH | Mark report read |
+| `/api/dashboard/stats` | GET | Dashboard metrics |
+| `/api/notifications` | GET, PATCH | Notifications |
+
+Auth uses JWT tokens stored in `localStorage` (`truthguard_token`).
+
+### External AI Integration (future)
+
+Service stubs in `/services` for external APIs:
 
 - `openai-service.ts` — OpenAI API
 - `google-ai-service.ts` — Google AI (Gemini)
 - `factcheck-service.ts` — Fact-check APIs
 - `news-service.ts` — News APIs
 
-Currently using mock JSON responses. Replace mock implementations with actual API calls when backend is ready.
-
 ## Environment Variables
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
+DATABASE_URL="postgresql://truthguard:truthguard@localhost:5432/truthguard?schema=public"
+JWT_SECRET="change-me-to-a-long-random-string"
+NEXT_PUBLIC_API_URL="/api"
 ```
 
 ## Design
