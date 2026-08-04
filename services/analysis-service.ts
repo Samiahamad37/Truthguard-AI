@@ -1,51 +1,38 @@
 import type { AnalysisRequest, AnalysisResult, HistoryRecord } from "@/types";
-import {
-  mockAnalysisResult,
-  mockHistoryRecords,
-} from "@/services/mock-data";
+import apiClient from "@/services/api-client";
 
-/** Simulates API delay for realistic UX */
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+export async function analyzeContent(request: AnalysisRequest): Promise<AnalysisResult> {
+  if (request.file) {
+    const formData = new FormData();
+    formData.append("contentType", request.contentType);
+    formData.append("content", request.content);
+    formData.append("file", request.file);
+    const { data } = await apiClient.post<AnalysisResult>("/analyses", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return data;
+  }
 
-export async function analyzeContent(
-  request: AnalysisRequest
-): Promise<AnalysisResult> {
-  await delay(2000);
-
-  const preview =
-    request.contentType === "text"
-      ? request.content.slice(0, 100)
-      : request.file?.name ?? request.content;
-
-  return {
-    ...mockAnalysisResult,
-    id: `analysis-${Date.now()}`,
+  const { data } = await apiClient.post<AnalysisResult>("/analyses", {
     contentType: request.contentType,
-    contentPreview: preview,
-    trustScore: Math.floor(Math.random() * 40) + 30,
-    createdAt: new Date().toISOString(),
-    completedAt: new Date().toISOString(),
-  };
+    content: request.content,
+  });
+  return data;
 }
 
 export async function getAnalysisById(id: string): Promise<AnalysisResult> {
-  await delay(500);
-  return { ...mockAnalysisResult, id };
+  const { data } = await apiClient.get<AnalysisResult>(`/analyses/${id}`);
+  return data;
 }
 
 export async function getAnalysisHistory(): Promise<HistoryRecord[]> {
-  await delay(300);
-  return mockHistoryRecords;
+  const { data } = await apiClient.get<HistoryRecord[]>("/analyses");
+  return data;
 }
 
-export async function searchHistory(
-  query: string
-): Promise<HistoryRecord[]> {
-  await delay(200);
-  const lower = query.toLowerCase();
-  return mockHistoryRecords.filter(
-    (r) =>
-      r.contentPreview.toLowerCase().includes(lower) ||
-      r.contentType.toLowerCase().includes(lower)
-  );
+export async function searchHistory(query: string): Promise<HistoryRecord[]> {
+  const { data } = await apiClient.get<HistoryRecord[]>("/analyses", {
+    params: { query },
+  });
+  return data;
 }
