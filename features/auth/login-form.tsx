@@ -18,6 +18,7 @@ import { useState } from "react";
 export function LoginForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -29,9 +30,15 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 500));
-    loginUser(data.email);
-    router.push("/dashboard");
+    setError(null);
+    try {
+      await loginUser(data.email, data.password);
+      router.push("/dashboard");
+    } catch {
+      setError("Invalid email or password. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -92,6 +99,8 @@ export function LoginForm() {
                 <p className="text-sm text-red-600">{errors.password.message}</p>
               )}
             </div>
+
+            {error && <p className="text-sm text-red-600">{error}</p>}
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign in"}
