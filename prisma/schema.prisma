@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  settings      UserSettings?
+  analyses      Analysis[]
+  reportReads   ReportRead[]
+  notifications Notification[]
+}
+
+model UserSettings {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  emailAnalysis Boolean @default(true)
+  emailSecurity Boolean @default(true)
+  emailUpdates  Boolean @default(false)
+  pushAnalysis  Boolean @default(true)
+  pushSecurity  Boolean @default(true)
+}
+
+model Analysis {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentType    String
+  contentPreview String
+  trustScore     Int
+  status         String
+  result         Json
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+
+  @@index([userId, createdAt])
+}
+
+model Report {
+  id        String   @id @default(cuid())
+  title     String
+  period    String
+  analyses  Int
+  flagged   Int
+  status    String
+  createdAt DateTime
+  startDate String
+  endDate   String
+  summary   String
+
+  reads ReportRead[]
+}
+
+model ReportRead {
+  id       String  @id @default(cuid())
+  userId   String
+  reportId String
+  read     Boolean @default(true)
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  report   Report  @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reportId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
