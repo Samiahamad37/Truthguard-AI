@@ -110,3 +110,31 @@ export interface ApiKey {
   createdAt: string;
   lastUsed?: string;
 }
+
+export type ReportStatus = "ready" | "generating" | "failed";
+
+export interface Report {
+  id: string;
+  title: string;
+  period: string;
+  analyses: number;
+  flagged: number;
+  status: ReportStatus;
+  createdAt: string;
+  startDate: string;
+  endDate: string;
+  summary: string;
+  read: boolean;
+}
+
+export interface NotificationPreferences {
+  emailAnalysis: boolean;
+  emailSecurity: boolean;
+  emailUpdates: boolean;
+  pushAnalysis: boolean;
+  pushSecurity: boolean;
+}
+
+export interface UserSettings {
+  notifications: NotificationPreferences;
+}
