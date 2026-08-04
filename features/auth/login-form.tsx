@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { loginSchema, type LoginFormData } from "@/features/auth/schemas";
 import { APP_NAME } from "@/utils/constants";
+import { loginUser } from "@/services/user-service";
 import { useState } from "react";
 
 export function LoginForm() {
@@ -26,9 +27,10 @@ export function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (_data: LoginFormData) => {
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
+    await new Promise((r) => setTimeout(r, 500));
+    loginUser(data.email);
     router.push("/dashboard");
   };
 
