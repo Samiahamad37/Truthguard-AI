@@ -1,0 +1,180 @@
+"use client";
+
+import { motion } from "framer-motion";
+import {
+  BarChart3,
+  ShieldAlert,
+  TrendingUp,
+  Activity,
+  ArrowUpRight,
+} from "lucide-react";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  TrustTrendChart,
+  ContentTypeChart,
+  WeeklyAnalysisChart,
+} from "@/components/charts/dashboard-charts";
+import { mockDashboardStats } from "@/services/mock-data";
+import { formatDate } from "@/lib/utils";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
+const stats = mockDashboardStats;
+
+const statCards = [
+  {
+    title: "Total Analyses",
+    value: stats.totalAnalyses.toLocaleString(),
+    change: "+12.5%",
+    icon: BarChart3,
+    color: "text-blue-600 bg-blue-100 dark:bg-blue-900/50",
+  },
+  {
+    title: "Trust Score Average",
+    value: `${stats.trustScoreAverage}%`,
+    change: "+3.2%",
+    icon: TrendingUp,
+    color: "text-emerald-600 bg-emerald-100 dark:bg-emerald-900/50",
+  },
+  {
+    title: "Fake News Detected",
+    value: stats.fakeNewsDetected.toString(),
+    change: "-8.1%",
+    icon: ShieldAlert,
+    color: "text-red-600 bg-red-100 dark:bg-red-900/50",
+  },
+  {
+    title: "Recent Activity",
+    value: stats.recentActivity.length.toString(),
+    change: "Today",
+    icon: Activity,
+    color: "text-purple-600 bg-purple-100 dark:bg-purple-900/50",
+  },
+];
+
+export default function DashboardPage() {
+  return (
+    <DashboardShell
+      title="Dashboard"
+      description="Overview of your misinformation detection activity"
+      action={
+        <Link href="/verify">
+          <Button>
+            Verify Content
+            <ArrowUpRight className="h-4 w-4" />
+          </Button>
+        </Link>
+      }
+    >
+      {/* Stats Grid */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        {statCards.map((stat, index) => (
+          <motion.div
+            key={stat.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className={`rounded-xl p-2.5 ${stat.color}`}>
+                    <stat.icon className="h-5 w-5" />
+                  </div>
+                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    {stat.change}
+                  </span>
+                </div>
+                <div className="mt-4">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {stat.title}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Charts */}
+      <div className="grid gap-6 lg:grid-cols-2 mb-8">
+        <Card>
+          <CardContent className="p-6">
+            <TrustTrendChart />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <WeeklyAnalysisChart />
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Recent Activity */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {stats.recentActivity.map((activity, index) => (
+                <motion.div
+                  key={activity.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="flex items-start gap-4 rounded-xl border border-slate-100 p-4 dark:border-slate-800"
+                >
+                  <div
+                    className={`mt-0.5 h-2 w-2 rounded-full shrink-0 ${
+                      activity.type === "analysis"
+                        ? "bg-blue-500"
+                        : activity.type === "alert"
+                          ? "bg-red-500"
+                          : "bg-emerald-500"
+                    }`}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      {activity.title}
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
+                      {activity.description}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {formatDate(activity.timestamp)}
+                    </p>
+                  </div>
+                  <Badge
+                    variant={
+                      activity.type === "analysis"
+                        ? "info"
+                        : activity.type === "alert"
+                          ? "danger"
+                          : "success"
+                    }
+                  >
+                    {activity.type}
+                  </Badge>
+                </motion.div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Content Type Distribution */}
+        <Card>
+          <CardContent className="p-6">
+            <ContentTypeChart />
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardShell>
+  );
+}
