@@ -34,7 +34,8 @@ export async function GET(request: Request) {
               id: a.id,
               type: "analysis" as const,
               title: `${a.contentType.toUpperCase()} Analysis Completed`,
-              description: `Trust score: ${a.trustScore}%`,
+              description: a.contentPreview,
+              trustScore: a.trustScore,
               timestamp: a.createdAt.toISOString(),
             }))
           : mockDashboardStats.recentActivity,
