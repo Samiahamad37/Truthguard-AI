@@ -83,6 +83,7 @@ export interface ActivityItem {
   title: string;
   description: string;
   timestamp: string;
+  trustScore?: number;
 }
 
 export interface Notification {
