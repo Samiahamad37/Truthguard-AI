@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Bell, Shield, Sparkles, CheckCheck } from "lucide-react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
@@ -8,7 +8,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { mockNotifications } from "@/services/mock-data";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import {
+  getNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from "@/services/notification-service";
 import { formatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { Notification } from "@/types";
@@ -20,18 +25,26 @@ const typeConfig = {
 };
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    getNotifications()
+      .then(setNotifications)
+      .catch(() => setNotifications([]))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const markAllRead = () => {
+  const markAllRead = async () => {
+    await markAllNotificationsRead();
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
-  const markRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+  const markRead = async (id: string) => {
+    const updated = await markNotificationRead(id);
+    setNotifications((prev) => prev.map((n) => (n.id === id ? updated : n)));
   };
 
   return (
@@ -47,7 +60,11 @@ export default function NotificationsPage() {
         ) : undefined
       }
     >
-      {notifications.length === 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center py-20">
+          <LoadingSpinner label="Loading notifications..." />
+        </div>
+      ) : notifications.length === 0 ? (
         <EmptyState
           icon={<Bell className="h-8 w-8 text-slate-400" />}
           title="No notifications"

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   BarChart3,
@@ -16,45 +17,69 @@ import {
   ContentTypeChart,
   WeeklyAnalysisChart,
 } from "@/components/charts/dashboard-charts";
+import { getDashboardStats } from "@/services/dashboard-service";
 import { mockDashboardStats } from "@/services/mock-data";
+import type { DashboardStats } from "@/types";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-const stats = mockDashboardStats;
-
-const statCards = [
+const statCardMeta = [
   {
     title: "Total Analyses",
-    value: stats.totalAnalyses.toLocaleString(),
+    key: "totalAnalyses" as const,
     change: "+12.5%",
     icon: BarChart3,
     color: "text-blue-600 bg-blue-100 dark:bg-blue-900/50",
+    format: (v: number) => v.toLocaleString(),
   },
   {
     title: "Trust Score Average",
-    value: `${stats.trustScoreAverage}%`,
+    key: "trustScoreAverage" as const,
     change: "+3.2%",
     icon: TrendingUp,
     color: "text-emerald-600 bg-emerald-100 dark:bg-emerald-900/50",
+    format: (v: number) => `${v}%`,
   },
   {
     title: "Fake News Detected",
-    value: stats.fakeNewsDetected.toString(),
+    key: "fakeNewsDetected" as const,
     change: "-8.1%",
     icon: ShieldAlert,
     color: "text-red-600 bg-red-100 dark:bg-red-900/50",
+    format: (v: number) => v.toString(),
   },
   {
     title: "Recent Activity",
-    value: stats.recentActivity.length.toString(),
+    key: "recentActivity" as const,
     change: "Today",
     icon: Activity,
     color: "text-purple-600 bg-purple-100 dark:bg-purple-900/50",
+    format: (_v: unknown, stats: DashboardStats) => stats.recentActivity.length.toString(),
   },
 ];
 
 export default function DashboardPage() {
+  const [stats, setStats] = useState<DashboardStats>(mockDashboardStats);
+
+  useEffect(() => {
+    getDashboardStats()
+      .then(setStats)
+      .catch(() => setStats(mockDashboardStats));
+  }, []);
+
+  const statCards = useMemo(
+    () =>
+      statCardMeta.map((meta) => ({
+        ...meta,
+        value:
+          meta.key === "recentActivity"
+            ? meta.format(null, stats)
+            : meta.format(stats[meta.key] as number),
+      })),
+    [stats]
+  );
+
   return (
     <DashboardShell
       title="Dashboard"

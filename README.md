@@ -123,7 +123,7 @@ Service stubs in `/services` for external APIs:
 ## Environment Variables
 
 ```env
-DATABASE_URL="postgresql://truthguard:truthguard@localhost:5432/truthguard?schema=public"
+DATABASE_URL="postgresql://truthguard:truthguard@localhost:5433/truthguard?schema=public"
 JWT_SECRET="change-me-to-a-long-random-string"
 NEXT_PUBLIC_API_URL="/api"
 ```

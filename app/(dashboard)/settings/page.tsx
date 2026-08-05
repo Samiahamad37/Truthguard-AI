@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,6 +16,12 @@ import { Switch } from "@/components/ui/switch";
 import { Alert } from "@/components/ui/alert";
 import { useTheme } from "next-themes";
 import type { ApiKey } from "@/types";
+import {
+  fetchCurrentUser,
+  updateUserProfile,
+  fetchUserSettings,
+  updateNotificationPrefs,
+} from "@/services/user-service";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -56,27 +62,54 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [saved, setSaved] = useState(false);
   const [apiKeys] = useState(mockApiKeys);
-  const [notifications, setNotifications] = useState({
-    emailAnalysis: true,
-    emailSecurity: true,
-    emailUpdates: false,
-    pushAnalysis: true,
-    pushSecurity: true,
-  });
+  const [notifications, setNotifications] = useState(
+    () => ({ emailAnalysis: true, emailSecurity: true, emailUpdates: false, pushAnalysis: true, pushSecurity: true })
+  );
 
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: { name: "John Doe", email: "john@example.com" },
   });
 
+  useEffect(() => {
+    async function loadSettings() {
+      const [user, settings] = await Promise.all([
+        fetchCurrentUser(),
+        fetchUserSettings(),
+      ]);
+      if (user) {
+        profileForm.reset({ name: user.name, email: user.email });
+      }
+      setNotifications(settings.notifications);
+    }
+    loadSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const passwordForm = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
   });
 
-  const handleSave = async () => {
+  const handleProfileSave = async (data: ProfileFormData) => {
+    const updated = await updateUserProfile(data);
+    if (updated) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    }
+  };
+
+  const handlePasswordSave = async () => {
     await new Promise((r) => setTimeout(r, 500));
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+  };
+
+  const handleNotificationChange = async (
+    key: keyof typeof notifications,
+    checked: boolean
+  ) => {
+    setNotifications((prev) => ({ ...prev, [key]: checked }));
+    await updateNotificationPrefs({ [key]: checked });
   };
 
   return (
@@ -119,7 +152,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent>
               <form
-                onSubmit={profileForm.handleSubmit(handleSave)}
+                onSubmit={profileForm.handleSubmit(handleProfileSave)}
                 className="space-y-4"
               >
                 <div className="space-y-2">
@@ -154,7 +187,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent>
               <form
-                onSubmit={passwordForm.handleSubmit(handleSave)}
+                onSubmit={passwordForm.handleSubmit(handlePasswordSave)}
                 className="space-y-4"
               >
                 <div className="space-y-2">
@@ -242,7 +275,7 @@ export default function SettingsPage() {
                     id={item.key}
                     checked={notifications[item.key]}
                     onCheckedChange={(checked) =>
-                      setNotifications((prev) => ({ ...prev, [item.key]: checked }))
+                      handleNotificationChange(item.key, checked)
                     }
                   />
                 </div>
