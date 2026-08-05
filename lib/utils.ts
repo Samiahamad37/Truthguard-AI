@@ -37,3 +37,23 @@ export function getTrustScoreBadgeVariant(
   if (score >= 40) return "warning";
   return "danger";
 }
+
+export function getTrustScoreDescription(score: number): string {
+  if (score >= 80) {
+    return "This content shows strong indicators of reliability and aligns with credible source patterns.";
+  }
+  if (score >= 60) {
+    return "This content is mostly reliable, but some claims should be verified before sharing.";
+  }
+  if (score >= 40) {
+    return "This content has questionable elements and requires careful fact-checking.";
+  }
+  return "This content shows strong misinformation signals and should not be trusted without verification.";
+}
+
+export function getTrustScoreProgressColor(score: number): string {
+  if (score >= 80) return "stroke-emerald-500";
+  if (score >= 60) return "stroke-blue-500";
+  if (score >= 40) return "stroke-amber-500";
+  return "stroke-red-500";
+}

@@ -20,7 +20,8 @@ import {
 import { getDashboardStats } from "@/services/dashboard-service";
 import { mockDashboardStats } from "@/services/mock-data";
 import type { DashboardStats } from "@/types";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate, getTrustScoreColor, getTrustScoreLabel } from "@/lib/utils";
+import { TrustScoreBadge, TrustScoreLegend } from "@/components/ui/trust-score-display";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -116,6 +117,11 @@ export default function DashboardPage() {
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {stat.value}
                   </p>
+                  {stat.key === "trustScoreAverage" && (
+                    <p className={cn("mt-1 text-sm font-medium", getTrustScoreColor(stats.trustScoreAverage))}>
+                      {getTrustScoreLabel(Math.round(stats.trustScoreAverage))}
+                    </p>
+                  )}
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     {stat.title}
                   </p>
@@ -172,21 +178,34 @@ export default function DashboardPage() {
                     <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
                       {activity.description}
                     </p>
+                    {activity.type === "analysis" && activity.trustScore != null && (
+                      <div className="mt-2">
+                        <TrustScoreBadge score={activity.trustScore} />
+                      </div>
+                    )}
                     <p className="mt-1 text-xs text-slate-400">
                       {formatDate(activity.timestamp)}
                     </p>
                   </div>
-                  <Badge
-                    variant={
-                      activity.type === "analysis"
-                        ? "info"
-                        : activity.type === "alert"
-                          ? "danger"
-                          : "success"
-                    }
-                  >
-                    {activity.type}
-                  </Badge>
+                  {activity.type === "analysis" && activity.trustScore != null ? (
+                    <Link href={`/results/${activity.id}`}>
+                      <Button variant="ghost" size="sm">
+                        View
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Badge
+                      variant={
+                        activity.type === "analysis"
+                          ? "info"
+                          : activity.type === "alert"
+                            ? "danger"
+                            : "success"
+                      }
+                    >
+                      {activity.type}
+                    </Badge>
+                  )}
                 </motion.div>
               ))}
             </div>
@@ -194,11 +213,14 @@ export default function DashboardPage() {
         </Card>
 
         {/* Content Type Distribution */}
-        <Card>
-          <CardContent className="p-6">
-            <ContentTypeChart />
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="p-6">
+              <ContentTypeChart />
+            </CardContent>
+          </Card>
+          <TrustScoreLegend />
+        </div>
       </div>
     </DashboardShell>
   );

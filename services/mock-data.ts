@@ -14,14 +14,16 @@ export const mockDashboardStats: DashboardStats = {
       id: "1",
       type: "analysis",
       title: "URL Analysis Completed",
-      description: "Trust score: 34% — Likely misinformation detected",
+      description: "https://example-news-site.com/breaking-story",
+      trustScore: 34,
       timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
     },
     {
       id: "2",
       type: "analysis",
       title: "Text Analysis Completed",
-      description: "Trust score: 91% — Highly trustworthy content",
+      description: "According to the World Health Organization, vaccination rates...",
+      trustScore: 91,
       timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
     },
     {

@@ -24,9 +24,11 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { BiasRadarChart } from "@/components/charts/dashboard-charts";
 import { getAnalysisById } from "@/services/analysis-service";
 import {
+  cn,
   formatDate,
-  getTrustScoreBadgeVariant,
   getTrustScoreLabel,
+  getTrustScoreColor,
+  getTrustScoreDescription,
 } from "@/lib/utils";
 import type { AnalysisResult } from "@/types";
 
@@ -136,13 +138,14 @@ export default function ResultsPage() {
                 value={result.trustScore}
                 size={140}
                 label="Trust Score"
+                useTrustColors
               />
-              <Badge
-                variant={getTrustScoreBadgeVariant(result.trustScore)}
-                className="mt-4"
-              >
+              <p className={cn("mt-4 text-lg font-semibold", getTrustScoreColor(result.trustScore))}>
                 {getTrustScoreLabel(result.trustScore)}
-              </Badge>
+              </p>
+              <p className="mt-2 max-w-xs text-center text-sm text-slate-500 dark:text-slate-400">
+                {getTrustScoreDescription(result.trustScore)}
+              </p>
             </div>
 
             <div className="md:col-span-2 space-y-4">

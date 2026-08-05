@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn, getTrustScoreProgressColor } from "@/lib/utils";
 
 interface CircularProgressProps {
   value: number;
@@ -9,6 +9,7 @@ interface CircularProgressProps {
   className?: string;
   label?: string;
   showValue?: boolean;
+  useTrustColors?: boolean;
 }
 
 export function CircularProgress({
@@ -18,17 +19,21 @@ export function CircularProgress({
   className,
   label,
   showValue = true,
+  useTrustColors = false,
 }: CircularProgressProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (value / 100) * circumference;
 
-  const getColor = () => {
-    if (value >= 80) return "stroke-emerald-500";
-    if (value >= 60) return "stroke-blue-500";
-    if (value >= 40) return "stroke-amber-500";
-    return "stroke-red-500";
-  };
+  const strokeColor = useTrustColors
+    ? getTrustScoreProgressColor(value)
+    : value >= 80
+      ? "stroke-emerald-500"
+      : value >= 60
+        ? "stroke-blue-500"
+        : value >= 40
+          ? "stroke-amber-500"
+          : "stroke-red-500";
 
   return (
     <div className={cn("relative inline-flex flex-col items-center", className)}>
@@ -51,7 +56,7 @@ export function CircularProgress({
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          className={cn("transition-all duration-1000 ease-out", getColor())}
+          className={cn("transition-all duration-1000 ease-out", strokeColor)}
         />
       </svg>
       {showValue && (
